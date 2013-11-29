@@ -1,0 +1,6 @@
+(ns tree-edit-distance.core)
+
+(defn rtdm
+  "The RTDM al"
+  [tree-1 tree-2 thresh]
+  (let []))
