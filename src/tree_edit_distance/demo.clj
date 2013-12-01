@@ -5,15 +5,18 @@
   (:import (org.htmlcleaner HtmlCleaner DomSerializer CleanerProperties)
            (org.w3c.dom Document)))
 
-(defn get-xml-tree
-  "Downloads a webpage and converts it to an org.w3.dom.Document"
+(defn get-xml-tree-html
   [url]
+  (-> (client/get url) :body))
+
+(defn get-xml-tree-body
+  "Downloads a webpage and converts it to an org.w3.dom.Document"
+  [page-src]
   
   (let [cleaner        (new HtmlCleaner)
         props          (.getProperties cleaner)
         cleaner-props  (new CleanerProperties)
         dom-serializer (new DomSerializer cleaner-props)
-        page-src       (-> (client/get url) :body)
         tag-node       (.clean cleaner page-src)]
     
     (.createDOM dom-serializer tag-node)))
