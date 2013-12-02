@@ -91,3 +91,12 @@
         (aset M (inc i) (inc j) (int (min del ins sub)))))
     (pprint M)
     (aget M m n)))
+
+(defn rtdm-edit-distance-sim
+  [tree-1 tree-2 del-cost ins-cost sub-cost]
+  (let [t1-desc (tree-descendants tree-1)
+        t2-desc (tree-descendants tree-2)]
+    (- 1
+       (/ (rtdm-edit-distance tree-1 tree-2 del-cost ins-cost sub-cost)
+          (+ (* (+ (count t1-desc) 1) del-cost)
+             (* (+ (count t2-desc) 1) sub-cost))))))
