@@ -89,7 +89,6 @@
                    :else
                    (+ sub-i sub-cost)))]
         (aset M (inc i) (inc j) (int (min del ins sub)))))
-    (pprint M)
     (aget M m n)))
 
 (defn rtdm-edit-distance-sim
