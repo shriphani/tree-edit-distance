@@ -3,13 +3,14 @@
 
 (defn init
   "Perform the correct initialization"
-  [m n]
+  [m n c1 c2 del-cost ins-cost]
   (let [M (make-array Integer/TYPE (inc m) (inc n))]
     (do
-      (doseq [i (range (inc m))]
-        (aset M i 0 (int 0)))
-      (doseq [j (range (inc n))]
-        (aset M 0 j (int 0)))
+      (doseq [i (range (inc m))
+              j (range (inc n))]
+        (aset M i j (int
+                     (+ (* del-cost c1)
+                        (* ins-cost c2)))))
       M)))
 
 (defn num-children
@@ -34,9 +35,59 @@
             (flatten (map tree-descendants (tree-children a-tree))))
     []))
 
+(defn invert-cost
+  [t1 t2 del-cost ins-cost sub-cost]
+  (let [t1-desc (tree-descendants t1)
+        t2-desc (tree-descendants t2)]
+    (- (+ (* del-cost (count t1-desc))
+          (* ins-cost (count t2-desc)))
+       (rtdm-edit-distance t1 t2 del-cost ins-cost sub-cost))))
+
 (defn rtdm-edit-distance
   "The RTDM algorithm for computing edit-distance.
    The trees are assumed to be org.w3c.dom.Documents"
-  [tree-1 tree-2 thresh del-cost ins-cost sub-cost]
+  [tree-1 tree-2 del-cost ins-cost sub-cost]
 
-  '*)
+  (let [m (num-children tree-1)
+        n (num-children tree-2)
+
+        t1-children (tree-children tree-1)
+        t2-children (tree-children tree-2)
+        
+        t1-desc (tree-descendants tree-1)
+        t2-desc (tree-descendants tree-2)
+
+        M (init m n (count t1-desc) (count t2-desc) del-cost ins-cost)]
+    
+    (doseq [i (range m)
+            j (range n)]
+      (let [c-i (nth t1-children i)
+            c-j (nth t2-children j)
+
+            c-i-desc (tree-descendants c-i)
+            c-j-desc (tree-descendants c-j)
+
+            del (aget M i (inc j))
+            ins (aget M (inc i) j)
+
+            sub-i (- (aget M i j)
+                     del-cost
+                     ins-cost)
+
+            sub (if (.isEqualNode c-i c-j)
+                  (- sub-i
+                     (* ins-cost (count c-j-desc))
+                     (* del-cost (count c-i-desc)))
+                  (cond
+                   (or (not (.hasChildNodes c-i))
+                       (not (.hasChildNodes c-j)))
+                   (+ sub-i sub-cost)
+
+                   (and (= (.getNodeName c-i) (.getNodeName c-j)))
+                   (- sub-i (invert-cost c-i c-j del-cost ins-cost sub-cost))
+
+                   :else
+                   (+ sub-i sub-cost)))]
+        (aset M (inc i) (inc j) (int (min del ins sub)))))
+    (pprint M)
+    (aget M m n)))
