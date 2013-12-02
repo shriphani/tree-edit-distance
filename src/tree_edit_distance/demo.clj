@@ -7,7 +7,7 @@
 
 (defn get-xml-tree-html
   [url]
-  (-> (client/get url) :body))
+  (-> url client/get :body get-xml-tree-body))
 
 (defn get-xml-tree-body
   "Downloads a webpage and converts it to an org.w3.dom.Document"
