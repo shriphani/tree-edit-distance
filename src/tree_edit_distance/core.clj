@@ -1,5 +1,7 @@
 (ns tree-edit-distance.core
-  (:use [clojure.pprint]))
+  (:use [clojure.pprint])
+  (:import (org.htmlcleaner HtmlCleaner DomSerializer CleanerProperties)
+           (org.w3c.dom Document)))
 
 (defn init
   "Perform the correct initialization"
@@ -34,6 +36,8 @@
     (concat (tree-children a-tree)
             (flatten (map tree-descendants (tree-children a-tree))))
     []))
+
+(declare rtdm-edit-distance)
 
 (defn invert-cost
   [t1 t2 del-cost ins-cost sub-cost]
@@ -83,7 +87,9 @@
                        (not (.hasChildNodes c-j)))
                    (+ sub-i sub-cost)
 
-                   (and (= (.getNodeName c-i) (.getNodeName c-j)))
+                   (and (= (.getNodeName c-i) (.getNodeName c-j))
+                        (= (.getNamedItem (.getAttributes c-i) "class")
+                           (.getNamedItem (.getAttributes c-j) "class")))
                    (- sub-i (invert-cost c-i c-j del-cost ins-cost sub-cost))
 
                    :else
@@ -99,3 +105,24 @@
        (/ (rtdm-edit-distance tree-1 tree-2 del-cost ins-cost sub-cost)
           (+ (* (+ (count t1-desc) 1) del-cost)
              (* (+ (count t2-desc) 1) sub-cost))))))
+
+(defn get-xml-tree-body
+  "Downloads a webpage and converts it to an org.w3.dom.Document"
+  [page-src]
+  
+  (let [cleaner        (new HtmlCleaner)
+        props          (.getProperties cleaner)
+        cleaner-props  (new CleanerProperties)
+        dom-serializer (new DomSerializer cleaner-props)
+        tag-node       (.clean cleaner page-src)]
+    
+    (.createDOM dom-serializer tag-node)))
+
+(defn rtdm-edit-distance-html
+  [pg1 pg2 del-cost ins-cost sub-cost]
+  (rtdm-edit-distance-sim
+   (get-xml-tree-body pg1)
+   (get-xml-tree-body pg2)
+   del-cost
+   ins-cost
+   sub-cost))
