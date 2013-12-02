@@ -32,10 +32,11 @@
   (if (.hasChildNodes a-tree)
     (concat (tree-children a-tree)
             (flatten (map tree-descendants (tree-children a-tree))))
-    ['*]))
+    []))
 
 (defn rtdm-edit-distance
   "The RTDM algorithm for computing edit-distance.
    The trees are assumed to be org.w3c.dom.Documents"
   [tree-1 tree-2 thresh del-cost ins-cost sub-cost]
+
   '*)
