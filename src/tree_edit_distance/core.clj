@@ -96,9 +96,7 @@
                           (= (.getNodeValue (.getNamedItem (.getAttributes c-i) "class"))
                              (.getNodeValue (.getNamedItem (.getAttributes c-j) "class")))
                           (catch Exception e true)))
-                   (do
-                     (println (.getAttributes c-i) (.getAttributes c-j))
-                     (- sub-i (invert-cost c-i c-j del-cost ins-cost sub-cost)))
+                   (- sub-i (invert-cost c-i c-j del-cost ins-cost sub-cost))
 
                    :else
                    (+ sub-i sub-cost)))]
