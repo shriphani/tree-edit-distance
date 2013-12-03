@@ -88,9 +88,17 @@
                    (+ sub-i sub-cost)
 
                    (and (= (.getNodeName c-i) (.getNodeName c-j))
-                        (= (.getNamedItem (.getAttributes c-i) "class")
-                           (.getNamedItem (.getAttributes c-j) "class")))
-                   (- sub-i (invert-cost c-i c-j del-cost ins-cost sub-cost))
+                        (try
+                          (= (.getNodeValue (.getNamedItem (.getAttributes c-i) "id"))
+                             (.getNodeValue (.getNamedItem (.getAttributes c-j) "id")))
+                          (catch Exception e true))
+                        (try
+                          (= (.getNodeValue (.getNamedItem (.getAttributes c-i) "class"))
+                             (.getNodeValue (.getNamedItem (.getAttributes c-j) "class")))
+                          (catch Exception e true)))
+                   (do
+                     (println (.getAttributes c-i) (.getAttributes c-j))
+                     (- sub-i (invert-cost c-i c-j del-cost ins-cost sub-cost)))
 
                    :else
                    (+ sub-i sub-cost)))]
