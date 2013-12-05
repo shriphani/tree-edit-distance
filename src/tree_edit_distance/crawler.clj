@@ -76,3 +76,9 @@
   [entry target-example thresh limit]
   (let [target-pg-src (-> target-example client/get :body)]
     (crawl entry target-pg-src thresh limit)))
+
+(defn rtdm-edit-distance-urls
+  [url1 url2]
+  (let [body1 (-> url1 client/get :body)
+        body2 (-> url2 client/get :body)]
+    (core/rtdm-edit-distance-html body1 body2 1 1 1)))

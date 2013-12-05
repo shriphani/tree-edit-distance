@@ -33,9 +33,9 @@
 (defn tree-descendants
   [a-tree]
   (if (.hasChildNodes a-tree)
-    (concat (tree-children a-tree)
-            (flatten (map tree-descendants (tree-children a-tree))))
-    []))
+    (+ (num-children a-tree)
+       (apply + (map tree-descendants (tree-children a-tree))))
+    0))
 
 (declare rtdm-edit-distance)
 
@@ -43,8 +43,8 @@
   [t1 t2 del-cost ins-cost sub-cost]
   (let [t1-desc (tree-descendants t1)
         t2-desc (tree-descendants t2)]
-    (- (+ (* del-cost (count t1-desc))
-          (* ins-cost (count t2-desc)))
+    (- (+ (* del-cost  t1-desc)
+          (* ins-cost  t2-desc))
        (rtdm-edit-distance t1 t2 del-cost ins-cost sub-cost))))
 
 (defn rtdm-edit-distance
@@ -61,7 +61,7 @@
         t1-desc (tree-descendants tree-1)
         t2-desc (tree-descendants tree-2)
 
-        M (init m n (count t1-desc) (count t2-desc) del-cost ins-cost)]
+        M (init m n t1-desc t2-desc del-cost ins-cost)]
     
     (doseq [i (range m)
             j (range n)]
@@ -80,22 +80,14 @@
 
             sub (if (.isEqualNode c-i c-j)
                   (- sub-i
-                     (* ins-cost (count c-j-desc))
-                     (* del-cost (count c-i-desc)))
+                     (* ins-cost c-j-desc)
+                     (* del-cost c-i-desc))
                   (cond
                    (or (not (.hasChildNodes c-i))
                        (not (.hasChildNodes c-j)))
                    (+ sub-i sub-cost)
 
-                   (and (= (.getNodeName c-i) (.getNodeName c-j))
-                        (try
-                          (= (.getNodeValue (.getNamedItem (.getAttributes c-i) "id"))
-                             (.getNodeValue (.getNamedItem (.getAttributes c-j) "id")))
-                          (catch Exception e true))
-                        (try
-                          (= (.getNodeValue (.getNamedItem (.getAttributes c-i) "class"))
-                             (.getNodeValue (.getNamedItem (.getAttributes c-j) "class")))
-                          (catch Exception e true)))
+                   (or (= (.getNodeName c-i) (.getNodeName c-j)))
                    (- sub-i (invert-cost c-i c-j del-cost ins-cost sub-cost))
 
                    :else
@@ -109,8 +101,8 @@
         t2-desc (tree-descendants tree-2)]
     (- 1
        (/ (rtdm-edit-distance tree-1 tree-2 del-cost ins-cost sub-cost)
-          (+ (* (+ (count t1-desc) 1) del-cost)
-             (* (+ (count t2-desc) 1) sub-cost))))))
+          (+ (* (+ t1-desc 1) del-cost)
+             (* (+ t2-desc 1) sub-cost))))))
 
 (defn get-xml-tree-body
   "Downloads a webpage and converts it to an org.w3.dom.Document"
@@ -120,9 +112,11 @@
         props          (.getProperties cleaner)
         cleaner-props  (new CleanerProperties)
         dom-serializer (new DomSerializer cleaner-props)
-        tag-node       (.clean cleaner page-src)]
-    
-    (.createDOM dom-serializer tag-node)))
+        tag-node       (.clean cleaner page-src)
+        d              (.createDOM dom-serializer tag-node)]
+    (do
+      (.normalize d)
+      d)))
 
 (defn rtdm-edit-distance-html
   [pg1 pg2 del-cost ins-cost sub-cost]
@@ -132,3 +126,4 @@
    del-cost
    ins-cost
    sub-cost))
+
