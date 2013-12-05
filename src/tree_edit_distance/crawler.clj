@@ -16,9 +16,10 @@
       (fn [l]
         (uri/fragment l nil))
       (filter
-       #(and identity (= (uri/host url) (uri/host %)))
+       #(and (identity %) (= (uri/host url) (uri/host %)))
        (map
-        #(uri/resolve-uri url (-> % :attrs :href))
+        #(try (uri/resolve-uri url (-> % :attrs :href))
+              (catch Exception e nil))
         a-tags))))))
 
 (defn crawl
@@ -33,7 +34,8 @@
              _        (println :link new-link)
              body     (-> new-link client/get :body)
              links    (filter
-                       #(and (not= new-link %)
+                       #(and %
+                             (not= new-link %)
                              (not (some #{%} (set (map (fn [v] (-> v :target)) visited)))))
                        (extract-links new-link body))]
          (if body
