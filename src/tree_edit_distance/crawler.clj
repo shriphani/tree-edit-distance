@@ -36,22 +36,33 @@
                        #(and (not= new-link %)
                              (not (some #{%} (set (map (fn [v] (-> v :target)) visited)))))
                        (extract-links new-link body))]
-         (Thread/sleep 1500)
-         (recur entry
-                target-pg-src
-                thresh
-                limit
-                (rest (concat queue (map
-                                     (fn [l]
-                                       {:src new-link
-                                        :target l})
-                                     links)))
-                (if (>= (core/rtdm-edit-distance-html
-                         target-pg-src body 1 1 1)
-                        thresh)
-                  (conj pages {:url new-link :body body})
-                  pages)
-                (conj visited (first queue)))))))
+         (if body
+           (do
+             (Thread/sleep 1500)
+             (recur entry
+                    target-pg-src
+                    thresh
+                    limit
+                    (rest (concat queue (map
+                                         (fn [l]
+                                           {:src new-link
+                                            :target l})
+                                         links)))
+                    (if (>= (core/rtdm-edit-distance-html
+                             target-pg-src body 1 1 1)
+                            thresh)
+                      (conj pages {:url new-link :body body})
+                      pages)
+                    (conj visited (first queue))))
+           (do
+             (Thread/sleep 1500)
+             (recur entry
+                    target-pg-src
+                    thresh
+                    limit
+                    (rest queue)
+                    pages
+                    (conj visited (first queue)))))))))
 
 (defn build-tpm
   "Builds a TPM graph
