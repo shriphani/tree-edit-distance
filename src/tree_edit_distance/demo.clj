@@ -5,18 +5,10 @@
   (:import (org.htmlcleaner HtmlCleaner DomSerializer CleanerProperties)
            (org.w3c.dom Document)))
 
-(defn get-xml-tree-body-d
-  "Downloads a webpage and converts it to an org.w3.dom.Document"
-  [page-src]
-  
-  (let [cleaner        (new HtmlCleaner)
-        props          (.getProperties cleaner)
-        cleaner-props  (new CleanerProperties)
-        dom-serializer (new DomSerializer cleaner-props)
-        tag-node       (.clean cleaner page-src)]
-    
-    (.createDOM dom-serializer tag-node)))
-
-(defn get-xml-tree-html
-  [url]
-  (-> url client/get :body get-xml-tree-body-d))
+(defn forum-index-page-similarity-test
+  []
+  (let [base-index  "http://forums.finalgear.com/finalgear-com-news/"
+        alt-indices ["http://forums.finalgear.com/the-site-itself/"
+                     "http://forums.finalgear.com/the-forums/"
+                     "http://forums.finalgear.com/video-offers/"
+                     "http://forums.finalgear.com/top-gear-america/"]]))

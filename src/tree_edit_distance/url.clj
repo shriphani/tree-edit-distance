@@ -20,3 +20,13 @@
               (count p1)
               (count
                (map (fn [[u v]] (= u v)) (map vector p1 p2))))))))
+
+(defn url-pattern
+  "Generate a url pattern using a regex tree. The resulting
+   URL looks like a perl-regex."
+  [urls]
+  (reduce
+   (fn [pattern url]
+     (map [k (range )]))
+   ""
+   urls))
